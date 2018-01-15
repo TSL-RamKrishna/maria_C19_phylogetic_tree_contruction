@@ -1,0 +1,13 @@
+file "sequence_for_alignment_clustalo.fasta" => ["sequence_for_alignment.fasta"] do
+  sh "source clustalo-1.1.0; clustalo --force --in sequence_for_alignment.fasta --infmt=fasta --seqtype=Protein --full-iter --out sequence_for_alignment_clustalo.fasta --outfmt=fasta --iterations=1000 --auto --threads 4"
+end
+
+task :runClustalo => ["sequence_for_alignment_clustalo.fasta"]
+
+file "RAxML_bootstrap.C19" => [:runClustalo] do
+  sh "source raxml-8.2.11_1; raxmlHPC-PTHREADS-SSE3 -m PROTCATBLOSUM62 -s sequence_for_alignment_clustalo.fasta -n C19 -f a -x 1000 -N autoMR -T 4 -p 1000"
+end
+
+task :runRaxml => ["RAxML_bootstrap.C19"]
+
+task :default => ["runRaxml"]
